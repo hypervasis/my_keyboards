@@ -69,7 +69,7 @@ enum layers {
 #define LNAV_SPC LT(_NAV, KC_SPC)
 #define LI3_TAB LT(_I3, KC_TAB)
 #define LFUN_ENT LT(_FUN, KC_ENTER)
-#define LSYM_BCK LT(_FUN, KC_BACKSPACE)
+#define LSYM_BCK LT(_SYM, KC_BACKSPACE)
 #define LFN2_DEL LT(_FUN2, KC_DELETE)
 
 enum custom_keycodes {
