@@ -40,7 +40,7 @@ enum layers {
 #define DVORAK DF(_DVORAK)
 
 // Aliases for cut/cop/paste
-// Not realy needed since QMK already defines them!
+// Not really needed since QMK already defines them!
 // #define KC_COPY  LCTL(KC_C)
 // #define KC_CUT   LCTL(KC_X)
 // #define KC_PASTE LCTL(KC_V)
@@ -258,6 +258,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * DO NOT edit the rev1.c file; instead override the weakly defined default functions by your own.
  */
 bool isRecording = false;
+bool isRecOn = false;
+static uint16_t recOnTime=650;
+static uint16_t recOffTime=350;
+static uint16_t recBlinkLastUpdate;
 
 #ifdef OLED_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_180; }
@@ -298,7 +302,7 @@ bool oled_task_user(void) {
                 oled_write_P(PSTR("Navigation\n"), false);
                 break;
             case 4:
-                oled_write_P(PSTR("I3\n"), false);
+                oled_write_P(PSTR("i3\n"), false);
                 break;
             case 5:
                 oled_write_P(PSTR("Symbols\n"), false);
@@ -328,7 +332,25 @@ bool oled_task_user(void) {
         oled_write_P(led_usb_state.caps_lock ? PSTR("CAPLCK ") : PSTR("       "),
                      false);
         oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("\n"), false);
-        oled_write_P(isRecording ? PSTR("REC") : PSTR("   "), false);
+
+        if(isRecording) {
+            if (isRecOn) {
+                if (timer_elapsed(recBlinkLastUpdate) > recOnTime) {
+                    isRecOn = false;
+                    recBlinkLastUpdate = timer_read();
+                };
+                // rgb_matrix_set_color(0, 200, 200, 200);
+            } else {
+                if (timer_elapsed(recBlinkLastUpdate) > recOffTime) {
+                    isRecOn = true;
+                    recBlinkLastUpdate = timer_read();
+                };
+                // rgb_matrix_set_color(0, 20, 20, 20);
+            }
+            oled_write_P(isRecOn ? PSTR("REC") : PSTR("   "), false);
+        } else {
+            oled_write_P(PSTR("   "), false);
+        }
     } else {
         // clang-format off
         static const char PROGMEM hypervasis_logo[] = {
@@ -352,7 +374,7 @@ bool oled_task_user(void) {
         // 0,128,192,170,255,170,223,170,255,234,253,170,255,234,255,170,255,240,240,242,241,224,240,240,241,240,240,242,241,226,241,242,240,224,241,224,240,224,240,224,240,224,224,224,224,224,224,224,224,224,224,224,224,224,224,168,192,232,224,170,  0,128,224,234,192,232,224,224,224,224,224,224,225,224,225,224,225,224,193,224,225,226,193,227,225,234,193,227,225,227,193,227,193,227,197,227,195,193,193,225,193,193,193,195,193,200,192,128,  0,136,  0,162,192,192,192,194,192,202,  0,130,  0,136,  0,  0,  0,200,192,130,
         // 3,130,195,130,195,138,199,138,135,138,135,139,135,139,135,131,135,
 
-        // Stratosgear Industries, Building a bettere future (custom fonts)
+        // Stratosgear Industries, Building a betterer future (custom fonts)
         // 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
         // 0,  0,  0,  0,  0,  0,248,252,142,135,  3,  3,  3,  3,  3,  7, 14, 28, 24,  0,  0, 96,252,236, 96,  0,  0,224,224,128,192, 96, 96,  0,  0,128,192,224, 96, 96, 96, 96,224,192,128,  0,  0,  0, 96,252,252, 96, 96,  0,  0,  0,128,192,224, 96, 96, 96,224,192,128,  0,  0,  0,128,192,224, 96, 96, 96,192,192,  0,  0,  0,  0,128,192,224, 96, 96, 96,192,192,224,224,  0,  0,  0,128,192,224, 96, 96, 96,224,192,128,  0,  0,  0,128,192,224, 96, 96, 96, 96,224,192,128,  0,  0,  0,224,224,128,192, 96,  0,  0,  0,  0,  0,
         // 0,  0,  0,  0,  0,112,240,193,129,131,  3,  3,  3,  7,  6,134,142,252,120,  0,  0,  0,255,109,  0,  0,  0,123,255,  1,  0,  0,  0,  0,  0,241,241,152, 24, 24,  8,136,140,255,255,  0,  0,  0,  0,255,255,  0,  0,  0,  0,127,255,193,128,  0,  0,  0,128,193,255,127,  0,  0,199,207,140,  8, 24, 24, 56,240,224,  0,  0,127,255,193,128,  0,  0,  0,128,193,255,255,  0,  0,127,255,205,140, 12, 12, 12, 12,140,207, 79,  0,  0,241,241,152, 24, 24,  8,136,140,255,255,  0,  0,  0,255,183,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -405,13 +427,15 @@ bool    encoder_update_user(uint8_t index, bool clockwise) {
         mod_state = get_mods();
         switch (biton32(layer_state)) {
             case _COLEMAK_DH:
-                if (mod_state & MOD_MASK_SHIFT) {
-                    clockwise ? tap_code16(A(KC_RIGHT)) : tap_code16(A(KC_LEFT));
-                } else {
-                    clockwise ? tap_code(KC_MS_WH_DOWN) : tap_code(KC_MS_WH_UP);
-                }
+                clockwise ? tap_code(KC_RIGHT) : tap_code(KC_LEFT);
                 break;
             case _NAV:
+                clockwise ? tap_code(KC_DOWN) : tap_code(KC_UP);
+                break;
+            case _NUM:
+                clockwise ? tap_code(KC_PGDN) : tap_code(KC_PGUP);
+                break;
+            case _MOUSE:
                 clockwise ? tap_code16(C(KC_EQUAL)) : tap_code16(C(KC_MINUS));
                 break;
             case _I3:
@@ -494,8 +518,11 @@ void leader_end_user(void) {
 // Dynamic recording section
 void dynamic_macro_record_start_user(int8_t direction) {
     isRecording = true;
+    isRecOn = true;
+    recBlinkLastUpdate = timer_read();
 }
 
 void dynamic_macro_record_end_user(int8_t direction) {
     isRecording = false;
+    isRecOn = false;
 }
