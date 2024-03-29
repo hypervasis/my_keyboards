@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 db=/tmp/data.db
 
 rm $db
@@ -22,4 +21,4 @@ sqlite-utils vacuum $db
 
 # ls -al data.db
 
-python sqlite_parse.py
+poetry run python sqlite_parse.py
